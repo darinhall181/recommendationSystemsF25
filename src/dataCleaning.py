@@ -11,17 +11,6 @@ SOURCE_DATA_DIR = os.path.join(PROJECT_ROOT, "sourceData")
 
 
 def load_json_gz(filename, format='auto'):
-    """
-    Load a .json.gz file from the sourceData directory.
-    
-    Args:
-        filename: Name of the file (e.g., "beeradvocate.json.gz")
-        format: 'auto' (detect), 'json' (standard JSON), 'jsonl' (JSON Lines), 
-                or 'python' (Python dict syntax, one per line)
-    
-    Returns:
-        The parsed data (list of dicts for JSONL/Python format, or dict/list for JSON)
-    """
     file_path = os.path.join(SOURCE_DATA_DIR, filename)
     
     if not os.path.exists(file_path):
@@ -43,9 +32,9 @@ def load_json_gz(filename, format='auto'):
                         json.loads(first_line.strip())
                         format = 'jsonl'
                     except:
-                        format = 'json'  # Might be single JSON object
+                        format = 'json'  
                 else:
-                    format = 'json'  # Try as single JSON object
+                    format = 'json'  
             
             # Load based on detected/selected format
             if format == 'python':
@@ -96,15 +85,6 @@ def load_json_gz(filename, format='auto'):
 
 
 def explore_dataset(data, dataset_name="Dataset", num_samples=5):
-    """
-    Explore and display summary statistics about a loaded dataset.
-    Similar to pandas .head(), .info(), and .describe() but for raw dict data.
-    
-    Args:
-        data: List of dictionaries (records)
-        dataset_name: Name of the dataset for display
-        num_samples: Number of sample records to display
-    """
     print("\n" + "="*80)
     print(f"EXPLORING: {dataset_name}")
     print("="*80)
@@ -113,7 +93,7 @@ def explore_dataset(data, dataset_name="Dataset", num_samples=5):
         print("Dataset is empty or not a list of records.")
         return
     
-    print(f"\n📊 BASIC STATISTICS")
+    print(f"\nBASIC STATISTICS")
     print(f"   Total records: {len(data):,}")
     
     # Get all unique keys across records
@@ -126,7 +106,7 @@ def explore_dataset(data, dataset_name="Dataset", num_samples=5):
     print(f"   Field names: {sorted(all_keys)}")
     
     # Analyze each field
-    print(f"\n📋 FIELD ANALYSIS")
+    print(f"\nFIELD ANALYSIS")
     for key in sorted(all_keys):
         values = []
         missing_count = 0
@@ -164,7 +144,7 @@ def explore_dataset(data, dataset_name="Dataset", num_samples=5):
                       f"Avg length: {avg_len:.1f} | Missing: {missing_count}")
     
     # Show sample records (like head())
-    print(f"\n📄 SAMPLE RECORDS (first {num_samples}):")
+    print(f"\n SAMPLE RECORDS (first {num_samples}):")
     print("-"*80)
     for i, record in enumerate(data[:num_samples], 1):
         print(f"\nRecord {i}:")
@@ -182,18 +162,7 @@ def explore_dataset(data, dataset_name="Dataset", num_samples=5):
 
 
 def load_sample(filename, sample_size=50000, random_seed=42):
-    """
-    Load a random sample from a dataset file.
-    
-    Args:
-        filename: Name of the .json.gz file
-        sample_size: Number of records to sample
-        random_seed: Random seed for reproducibility
-    
-    Returns:
-        List of sampled records
-    """
-    print(f"\n📥 Loading sample from {filename}...")
+    print(f"\n Loading sample from {filename}...")
     data = load_json_gz(filename)
     
     if len(data) <= sample_size:
@@ -207,12 +176,7 @@ def load_sample(filename, sample_size=50000, random_seed=42):
 
 
 def extract_beeradvocate_triples(data):
-    """
-    Extract user-item-rating triples from BeerAdvocate dataset.
-    
-    Returns:
-        List of dicts with keys: user_id, item_id, rating
-    """
+
     triples = []
     for record in data:
         if not isinstance(record, dict):
@@ -308,20 +272,10 @@ def extract_steam_triples(data):
 
 def clean_triples(triples, min_user_reviews=3, min_item_reviews=3):
     """
-    Clean user-item-rating triples:
-    1. Remove duplicates
-    2. Filter users/items with minimum reviews
-    3. Reindex user and item IDs to consecutive integers
-    
-    Args:
-        triples: List of dicts with user_id, item_id, rating
-        min_user_reviews: Minimum number of reviews per user
-        min_item_reviews: Minimum number of reviews per item
-    
     Returns:
         Cleaned triples with reindexed IDs, and mapping dictionaries
     """
-    print(f"\n🧹 Cleaning triples...")
+    print(f"\nCleaning triples...")
     print(f"   Initial records: {len(triples):,}")
     
     # Remove duplicates (same user-item pair)
@@ -374,12 +328,6 @@ def clean_triples(triples, min_user_reviews=3, min_item_reviews=3):
 
 def compute_dataset_metrics(triples, dataset_name):
     """
-    Compute comparable metrics for a cleaned dataset.
-    
-    Args:
-        triples: List of cleaned triples with reindexed IDs
-        dataset_name: Name of the dataset
-    
     Returns:
         Dictionary of metrics
     """
@@ -416,8 +364,6 @@ def compute_dataset_metrics(triples, dataset_name):
 
 def print_comparison_table(metrics_list):
     """
-    Print a comparison table of metrics across datasets.
-    
     Args:
         metrics_list: List of metric dictionaries
     """
@@ -484,11 +430,6 @@ def print_comparison_table(metrics_list):
 def save_cleaned_dataset(triples, dataset_name, output_dir="sampleSets"):
     """
     Save cleaned dataset to a JSON file.
-    
-    Args:
-        triples: List of cleaned triples
-        dataset_name: Name of the dataset
-        output_dir: Directory to save the file
     """
     # Create output directory if it doesn't exist
     output_path = os.path.join(PROJECT_ROOT, output_dir)
@@ -499,21 +440,12 @@ def save_cleaned_dataset(triples, dataset_name, output_dir="sampleSets"):
     with open(filename, 'w') as f:
         json.dump(triples, f, indent=2)
     
-    print(f"   💾 Saved {len(triples):,} cleaned triples to {filename}")
+    print(f"   Saved {len(triples):,} cleaned triples to {filename}")
     return filename
 
 
 def process_all_datasets(sample_size=50000, min_user_reviews=3, min_item_reviews=3, random_seed=42, save_output=True):
     """
-    Process all three datasets with consistent parameters.
-    
-    Args:
-        sample_size: Number of records to sample from each dataset
-        min_user_reviews: Minimum reviews per user
-        min_item_reviews: Minimum reviews per item
-        random_seed: Random seed for reproducibility
-        save_output: Whether to save cleaned datasets to sampleSets folder
-    
     Returns:
         Dictionary mapping dataset names to cleaned triples and metrics
     """
@@ -610,7 +542,7 @@ if __name__ == "__main__":
             save_output=True
         )
         
-        print("\n✅ Data cleaning complete!")
+        print("\nData cleaning complete!")
         print(f"\nProcessed {len(results)} datasets:")
         for name, data in results.items():
             if 'metrics' in data:
